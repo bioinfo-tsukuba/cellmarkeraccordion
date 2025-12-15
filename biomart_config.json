@@ -1,0 +1,44 @@
+{
+  "marker_list_set": [
+    {
+      "id": 1,
+      "list": [
+        {
+          "version": "1.0.0",
+          "biomart_configs": [
+            {
+              "role": "source",
+              "file": "original_human_healthy.csv",
+              "species": "Human",
+              "tax_id": 9606,
+              "ensembl_dataset": "hsapiens_gene_ensembl",
+              "symbol_attribute": "hgnc_symbol",
+              "backend": "ensembl_biomart",
+              "release": 110
+            },
+            {
+              "role": "source",
+              "file": "original_mouse_healthy.csv",
+              "species": "Mouse",
+              "tax_id": 10090,
+              "ensembl_dataset": "mmusculus_gene_ensembl",
+              "symbol_attribute": "mgi_symbol",
+              "backend": "ensembl_biomart",
+              "release": 110
+            },
+            {
+              "role": "derived",
+              "species": "Rat",
+              "tax_id": 10116,
+              "ensembl_dataset": "rnorvegicus_gene_ensembl",
+              "symbol_attribute": "rgd_symbol",
+              "source_species": "Mouse",
+              "backend": "ensembl_biomart",
+              "release": 110
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
