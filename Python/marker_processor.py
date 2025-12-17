@@ -4,8 +4,8 @@ import pandas as pd
 import os
 from typing import List, Dict, Optional
 import logging
-from .marker_database_integration import ScoreCalculator
-from .ensembl_mapper import EnsemblMapper
+from marker_database_integration import ScoreCalculator
+from ensembl_mapper import EnsemblMapper
 
 
 class MarkerProcessor:

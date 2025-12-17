@@ -3,7 +3,7 @@
 import pandas as pd
 from typing import List, Dict, Optional
 import logging
-from .biomart_client import BioMartClient, BioMartAPIException
+from biomart_client import BioMartClient, BioMartAPIException
 
 
 class EnsemblMapper:

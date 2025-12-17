@@ -147,8 +147,7 @@ class ConversionPipeline:
     
     def _get_derived_output_filename(self, job_config: Dict) -> str:
         """Generate output filename for derived species."""
-        species_name = job_config['species'].lower()
-        return f"light_{species_name}_healthy.csv"
+        return job_config['outfile']
     
     def process_single_species(self, config_id: int, species: str):
         """Process a single species from the configuration."""
