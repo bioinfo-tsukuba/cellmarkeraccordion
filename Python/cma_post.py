@@ -35,7 +35,7 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
     Returns:
         dict: Dictionary with cell type markers organized by cell type
     """
-    print(f"--- Loading CellMarkerAccordion database for process_id: {process_id}")
+    # print(f"    Loading CellMarkerAccordion database for process_id: {process_id}")
     
     # Determine database file path based on configuration
     with open("../post_processing_config.json", 'r') as f:
@@ -84,21 +84,21 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
     db_file = species_config['outfile']  # e.g., "light_human_healthy.csv", "light_mouse_healthy.csv"
     db_path = f"../tools/cellmarkeraccordion/{db_version}/{db_file}"
     
-    print(f"--- Loading CellMarkerAccordion database from: {db_path}")
+    # print(f"    Loading CellMarkerAccordion database from: {db_path}")
     
     try:
         # Load CellMarkerAccordion data
         markers_df = pd.read_csv(db_path)
-        print(f"--- Loaded {len(markers_df)} marker entries from CellMarkerAccordion database")
+        # print(f"    Loaded {len(markers_df)} marker entries from CellMarkerAccordion database")
         
         # Filter by tissue if specified
         if tissue_ontology:
             tissue_filtered = markers_df[markers_df['Uberon_ID'] == tissue_ontology]
             if len(tissue_filtered) > 0:
                 markers_df = tissue_filtered
-                print(f"--- Filtered to {len(markers_df)} markers for tissue: {tissue_ontology}")
+                # print(f"    Filtered to {len(markers_df)} markers for tissue: {tissue_ontology}")
             else:
-                print(f"--- Warning: No markers found for tissue {tissue_ontology}, using all tissues")
+                print(f"    Warning: No markers found for tissue {tissue_ontology}, using all tissues")
         
         # Group markers by cell type for annotation
         cell_type_markers = {}
@@ -120,23 +120,23 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
                 cl_id = cell_markers['CL_ID'].iloc[0]  # All rows for same cell_type should have same CL_ID
                 ontology_mapping[cell_type] = cl_id
         
-        print(f"--- Organized markers for {len(cell_type_markers)} cell types")
+        # print(f"    Organized markers for {len(cell_type_markers)} cell types")
         return cell_type_markers, ontology_mapping
         
     except FileNotFoundError:
         # Fallback to v1.0.0 if specific version not found
         db_path_fallback = f"../tools/cellmarkeraccordion/v1.0.0/{db_file}"
-        print(f"--- Fallback: Loading from {db_path_fallback}")
+        print(f"    Fallback: Loading from {db_path_fallback}")
         
         markers_df = pd.read_csv(db_path_fallback)
-        print(f"--- Loaded {len(markers_df)} marker entries from fallback database")
+        print(f"    Loaded {len(markers_df)} marker entries from fallback database")
         
         # Filter by tissue if specified
         if tissue_ontology:
             tissue_filtered = markers_df[markers_df['Uberon_ID'] == tissue_ontology]
             if len(tissue_filtered) > 0:
                 markers_df = tissue_filtered
-                print(f"--- Filtered to {len(markers_df)} markers for tissue: {tissue_ontology}")
+                # print(f"    Filtered to {len(markers_df)} markers for tissue: {tissue_ontology}")
         
         # Group markers by cell type
         cell_type_markers = {}
@@ -159,10 +159,9 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
         return cell_type_markers, ontology_mapping
 
 
-def perform_cellmarkeraccordion_annotation(adata, cluster_key="louvain", 
-                                         process_id=1, tax_id=9606, tissue_ontology=None):
+def perform_cellmarkeraccordion_annotation(adata, cluster_key="louvain", process_id=1, tax_id=9606, tissue_ontology=None):
                                          
-    print(f"--- Starting CellMarkerAccordion annotation with process_id: {process_id}")
+    # print(f"    Starting CellMarkerAccordion annotation with process_id: {process_id}")
     
     # Load CellMarkerAccordion database
     cell_type_markers, ontology_mapping = load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology)
@@ -171,8 +170,8 @@ def perform_cellmarkeraccordion_annotation(adata, cluster_key="louvain",
     all_marker_genes = set()
     for cell_type_data in cell_type_markers.values():
         all_marker_genes.update(cell_type_data['positive'])
-    
-    print(f"--- Found {len(all_marker_genes)} unique marker genes in CellMarkerAccordion database")
+
+    print(f"    Found {len(all_marker_genes)} unique marker genes for {tissue_ontology} in CellMarkerAccordion database")
     
     # Use full expression data if provided, otherwise use adata.raw or current adata
     full_expr = adata.to_df().T  # Fallback to processed data
@@ -180,17 +179,17 @@ def perform_cellmarkeraccordion_annotation(adata, cluster_key="louvain",
     # Set gene names as index - use gene_symbols if available, otherwise use var_names
     if 'gene_symbols' in adata.var.columns:
         full_expr.index = adata.var['gene_symbols']
-        print(f"--- Using gene_symbols for gene names")
+        print(f"    Using gene_symbols for gene names")
     else:
         full_expr.index = adata.var_names
-        print(f"--- Warning: gene_symbols not found, using var_names instead")
+        print(f"    Warning: gene_symbols not found, using var_names instead")
     
     # Filter to only marker genes present in dataset (intersect)
     available_marker_genes = [gene for gene in all_marker_genes if gene in full_expr.index]
     expr_data = full_expr.loc[available_marker_genes]
     
-    print(f"--- Using {len(available_marker_genes)} marker genes present in dataset")
-    print(f"--- Expression data shape for CellMarkerAccordion: {expr_data.shape} (marker_genes × cells)")
+    print(f"    Using {len(available_marker_genes)} marker genes present in dataset")
+    # print(f"    Expression data shape for CellMarkerAccordion: {expr_data.shape} (marker_genes × cells)")
     
     # Calculate CellMarkerAccordion scores using ECs and SPs weighting
     cluster_results = []
@@ -247,15 +246,15 @@ def perform_cellmarkeraccordion_annotation(adata, cluster_key="louvain",
             best_cell_type = max(cell_type_scores.keys(), key=lambda ct: cell_type_scores[ct])
             best_score = cell_type_scores[best_cell_type]
             
-            if best_score > 0:
-                print(f"------ Cluster {cluster}: {best_cell_type} (score: {best_score:.3f}, n_cells: {len(cluster_cells)})")
-            else:
-                best_cell_type = "Unknown"
-                print(f"------ Cluster {cluster}: {best_cell_type} (no marker genes found, n_cells: {len(cluster_cells)})")
+            # if best_score > 0:
+                # print(f"       Cluster {cluster}: {best_cell_type} (score: {best_score:.3f}, n_cells: {len(cluster_cells)})")
+            # else:
+                # best_cell_type = "Unknown"
+                # print(f"       Cluster {cluster}: {best_cell_type} (no marker genes found, n_cells: {len(cluster_cells)})")
         else:
             best_cell_type = "Unknown"
             best_score = 0.0
-            print(f"------ Cluster {cluster}: {best_cell_type} (no cell types available, n_cells: {len(cluster_cells)})")
+            # print(f"       Cluster {cluster}: {best_cell_type} (no cell types available, n_cells: {len(cluster_cells)})")
         
         # Get ontology information for the best cell type
         cl_id = ontology_mapping.get(best_cell_type, "Unknown")
@@ -277,8 +276,8 @@ def perform_cellmarkeraccordion_annotation(adata, cluster_key="louvain",
     adata.obs['cell_type'] = adata.obs[cluster_key].map(cluster_to_celltype)
     
     # Print summary
-    print("--- CellMarkerAccordion annotation summary:")
-    for _, row in results_df.iterrows():
-        print(f"    Cluster {row['cluster']}: {row['cell_type']} (score: {row['score']:.3f}, n_cells: {row['ncells']})")
+    # print("    CellMarkerAccordion annotation summary:")
+    # for _, row in results_df.iterrows():
+    #     print(f"    Cluster {row['cluster']}: {row['cell_type']} (score: {row['score']:.3f}, n_cells: {row['ncells']})")
     
     return adata, results_df
