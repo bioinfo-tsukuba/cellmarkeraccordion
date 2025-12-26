@@ -44,7 +44,7 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
     # Find configuration for this process_id
     process_config = None
     for proc in config['post_processing']:
-        if proc['id'] == str(process_id):
+        if proc['process_id'] == str(process_id):
             process_config = proc['configs'][0]  # Take first config
             break
     
