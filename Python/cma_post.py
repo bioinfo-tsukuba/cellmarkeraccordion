@@ -38,7 +38,7 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
     # print(f"    Loading CellMarkerAccordion database for process_id: {process_id}")
     
     # Determine database file path based on configuration
-    with open("../post_processing_config.json", 'r') as f:
+    with open("post_processing_config.json", 'r') as f:
         config = pd.read_json(f)
     
     # Find configuration for this process_id
@@ -56,7 +56,7 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
         raise ValueError(f"Expected cellmarkeraccordion, got: {annotation_config['tool']}")
     
     # Load biomart_config.json to get version and outfile for this annotation id
-    biomart_config_path = f"../tools/cellmarkeraccordion/{annotation_config['config']}"
+    biomart_config_path = f"tools/cellmarkeraccordion/{annotation_config['config']}"
     with open(biomart_config_path, 'r') as f:
         biomart_config = pd.read_json(f)
     
@@ -82,7 +82,7 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
         raise ValueError(f"No configuration found for tax_id: {tax_id} in biomart_config")
     
     db_file = species_config['outfile']  # e.g., "light_human_healthy.csv", "light_mouse_healthy.csv"
-    db_path = f"../tools/cellmarkeraccordion/{db_version}/{db_file}"
+    db_path = f"tools/cellmarkeraccordion/{db_version}/{db_file}"
     
     # print(f"    Loading CellMarkerAccordion database from: {db_path}")
     
@@ -125,7 +125,7 @@ def load_cellmarkeraccordion_database(process_id, tax_id, tissue_ontology=None):
         
     except FileNotFoundError:
         # Fallback to v1.0.0 if specific version not found
-        db_path_fallback = f"../tools/cellmarkeraccordion/v1.0.0/{db_file}"
+        db_path_fallback = f"tools/cellmarkeraccordion/v1.0.0/{db_file}"
         print(f"    Fallback: Loading from {db_path_fallback}")
         
         markers_df = pd.read_csv(db_path_fallback)
